@@ -31,15 +31,20 @@ func (l *logincontroller) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := service.CreateToken(user.Email)
-	if err != nil {
-		log.Fatal(err)
-		return
+	_, existToken := middleware.GetRedisJWT(user.Email)
+	if existToken != "" {
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("Authorization", existToken, 3600*24*30, "", "", false, true)
+	} else {
+		token, err := service.CreateToken(user.Email)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
+		response.OkWithDetailed(map[string]string{"token": token}, "Login successful", c)
 	}
-
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
-	response.OkWithDetailed(map[string]string{"token": token}, "Login successful", c)
 }
 
 func (l *logincontroller) Logout(c *gin.Context) {

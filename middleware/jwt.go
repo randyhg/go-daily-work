@@ -37,7 +37,7 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
-			response.FailWithDetailed(gin.H{"reload": true}, "Unblocked or illegally visited", c)
+			response.FailWithMessage("Please login first", c)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -51,7 +51,7 @@ func JWTAuth() gin.HandlerFunc {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			response.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
+			response.FailWithMessage("Please login first", c)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -65,6 +65,7 @@ func JWTAuth() gin.HandlerFunc {
 		util.Master().Where("email = ?", claims.Email).First(&user)
 
 		if user.Id == 0 {
+			response.FailWithMessage("Unregistered user", c)
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 

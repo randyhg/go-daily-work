@@ -51,5 +51,13 @@ func RegisterRoutes(c *gin.Engine) {
 			category.POST("/update", controller.CategoryController.EditCategory)
 			category.POST("/delete", controller.CategoryController.DeleteCategory)
 		}
+
+		project := private.Group("project")
+		{
+			project.GET("/list", controller.ProjectController.GetProject)
+			project.POST("/add", controller.ProjectController.AddProject)
+			project.POST("/update", controller.ProjectController.EditProject)
+			project.POST("/delete", controller.ProjectController.DeleteProject)
+		}
 	}
 }

@@ -14,8 +14,8 @@ var WorkLogService = new(worklogservice)
 func (w *worklogservice) GetWorkLogService(userId int64) ([]model.WorkLog, error) {
 	var workLogs []model.WorkLog
 	if err := util.Master().
-		Preload("Project.Name").
-		//Preload("TaskCategory.Name").
+		Preload("Project").
+		Preload("TaskCategory").
 		Where("user_id = ?", userId).Find(&workLogs).Error; err != nil {
 		log.Error(err)
 		return nil, err

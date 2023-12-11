@@ -42,9 +42,6 @@ func (c *categoryservice) EditCategoryService(req request.UpdateCategory) error 
 }
 
 func (c *categoryservice) DeleteCategoryService(categoryId int64) error {
-	//deleteData := map[string]interface{}{
-	//	"id": req.CategoryId,
-	//}
 	if err := util.Master().Delete(&model.TaskCategory{}, categoryId).Error; err != nil {
 		log.Error(err)
 		return err

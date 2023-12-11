@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"go-daily-work/WorkLog/service"
 	"go-daily-work/middleware"
 	"go-daily-work/model/request"
@@ -20,6 +21,7 @@ func (w *worklogcontroller) GetWorkLog(c *gin.Context) {
 		response.FailWithDetailed(err, "Failed to get work log record", c)
 		return
 	}
+	fmt.Println(workLogs[1].Project.Name)
 	response.OkWithData(workLogs, c)
 }
 

@@ -39,3 +39,13 @@ type UpdateCategory struct {
 	CategoryId int64 `json:"category_id"`
 	Category
 }
+
+type Project struct {
+	Name   string `json:"project_name"`
+	Status int    `json:"project_status"`
+}
+
+type UpdateProject struct {
+	ProjectId int64 `json:"project_id"`
+	Project
+}
