@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"github.com/golang-jwt/jwt"
 	"go-daily-work/config"
 	"go-daily-work/model"
 	"go-daily-work/model/request"
@@ -9,7 +10,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +21,7 @@ func CreateToken(email string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	tokenString, err := token.SignedString([]byte(config.Instance.TokenKey))
 	if err != nil {

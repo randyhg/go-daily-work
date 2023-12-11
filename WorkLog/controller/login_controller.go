@@ -3,11 +3,11 @@ package controller
 import (
 	"fmt"
 	"go-daily-work/WorkLog/service"
+	"go-daily-work/log"
 	"go-daily-work/middleware"
 	"go-daily-work/model/request"
 	"go-daily-work/model/response"
 	"go-daily-work/util"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +20,7 @@ var LoginController = new(logincontroller)
 func (l *logincontroller) Login(c *gin.Context) {
 	var req request.Login
 	_ = c.ShouldBindJSON(&req)
+	log.Info(req)
 
 	req.Password = util.MD5V([]byte(req.Password))
 	user, err := service.LoginService.Login(req)

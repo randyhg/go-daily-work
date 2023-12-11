@@ -35,7 +35,7 @@ func NewJWT() *JWT {
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, _ := c.Cookie("Authorization")
+		token := c.Request.Header.Get("Authorization")
 		if token == "" {
 			response.FailWithDetailed(gin.H{"reload": true}, "Unblocked or illegally visited", c)
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -64,7 +64,7 @@ func JWTAuth() gin.HandlerFunc {
 		var user model.User
 		util.Master().Where("email = ?", claims.Email).First(&user)
 
-		if user.ID == 0 {
+		if user.Id == 0 {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 

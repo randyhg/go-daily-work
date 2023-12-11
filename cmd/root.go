@@ -3,6 +3,7 @@ package cmd
 import (
 	"go-daily-work/WorkLog/app"
 	"go-daily-work/config"
+	"go-daily-work/model"
 	"go-daily-work/util"
 	"os"
 
@@ -49,5 +50,6 @@ func start(cmd *cobra.Command, args []string) {
 	config.Init()
 	util.SqlInit()
 	util.RedisInit()
+	model.Migration()
 	app.StartServer()
 }
