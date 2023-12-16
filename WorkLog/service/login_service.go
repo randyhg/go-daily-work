@@ -4,13 +4,14 @@ import (
 	"errors"
 	"github.com/golang-jwt/jwt"
 	"go-daily-work/config"
+	milog "go-daily-work/log"
+	"go-daily-work/middleware"
 	"go-daily-work/model"
 	"go-daily-work/model/request"
 	"go-daily-work/util"
+	"gorm.io/gorm"
 	"log"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type loginservice struct{}
@@ -18,16 +19,23 @@ type loginservice struct{}
 var LoginService = new(loginservice)
 
 func CreateToken(email string) (string, error) {
+	var user model.User
+	util.Master().Where("email = ?", email).First(&user)
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["username"] = user.Name
+	claims["position"] = user.Position
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
 	tokenString, err := token.SignedString([]byte(config.Instance.TokenKey))
 	if err != nil {
 		return "", err
 	}
-	SetRedisJWT(tokenString, email)
+	err = middleware.SetRedisJWT(tokenString, email)
+	if err != nil {
+		milog.Error(err)
+	}
 	return tokenString, nil
 }
 
@@ -40,14 +48,4 @@ func (l *loginservice) Login(req request.Login) (user model.User, err error) {
 		}
 	}
 	return user, nil
-}
-
-func SetRedisJWT(token string, email string) (err error) {
-	timer := 60 * 60 * 24 * 7 * time.Second
-	err = util.RedisCache().Set(email, token, timer).Err()
-	return err
-}
-
-func DelRedisJWT(email string) error {
-	return util.RedisCache().Del(email).Err()
 }

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"go-daily-work/log"
 	"go-daily-work/util"
 	"gorm.io/gorm"
 	"time"
@@ -55,8 +56,9 @@ type Project struct {
 }
 
 func Migration() {
-	util.Master().AutoMigrate(&User{})
-	util.Master().AutoMigrate(&TaskCategory{})
-	util.Master().AutoMigrate(&Project{})
-	util.Master().AutoMigrate(&WorkLog{})
+	err := util.Master().AutoMigrate(&User{}, &TaskCategory{}, &Project{}, &WorkLog{})
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 }

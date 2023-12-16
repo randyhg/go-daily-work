@@ -5,6 +5,7 @@ import (
 	"go-daily-work/WorkLog/service"
 	"go-daily-work/model/request"
 	"go-daily-work/model/response"
+	"strconv"
 )
 
 type projectcontroller struct{}
@@ -12,7 +13,11 @@ type projectcontroller struct{}
 var ProjectController = new(projectcontroller)
 
 func (p *projectcontroller) GetProject(c *gin.Context) {
-	lists, err := service.ProjectService.GetProjectService()
+	length, _ := strconv.Atoi(c.Param("length"))
+	start, _ := strconv.Atoi(c.Param("start"))
+	length = 10
+	start = 0
+	lists, err := service.ProjectService.GetProjectService(length, start)
 	if err != nil {
 		response.FailWithDetailed(err, "Failed to get project records", c)
 		return

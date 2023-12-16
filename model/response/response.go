@@ -52,3 +52,10 @@ func FailWithMessage(message string, c *gin.Context) {
 func FailWithDetailed(data interface{}, message string, c *gin.Context) {
 	Result(ERROR, data, message, c)
 }
+
+type WorkLogResp struct {
+	Id           int64  `json:"id"`
+	ProjectName  string `json:"project_name"`
+	TaskCategory string `json:"task_category"`
+	Description  string `json:"description"`
+}

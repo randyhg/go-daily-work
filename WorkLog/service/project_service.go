@@ -11,8 +11,8 @@ type projectservice struct{}
 
 var ProjectService = new(projectservice)
 
-func (p *projectservice) GetProjectService() (project []model.Project, err error) {
-	if err := util.Master().Model(model.Project{}).Find(&project).Error; err != nil {
+func (p *projectservice) GetProjectService(limit, offset int) (project []model.Project, err error) {
+	if err := util.Master().Model(model.Project{}).Limit(limit).Offset(offset).Find(&project).Error; err != nil {
 		log.Error(err)
 		return nil, err
 	}

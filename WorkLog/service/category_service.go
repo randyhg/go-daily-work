@@ -11,8 +11,8 @@ type categoryservice struct{}
 
 var CategoryService = new(categoryservice)
 
-func (c *categoryservice) GetCategoryService() (category *[]model.TaskCategory, err error) {
-	if err := util.Master().Model(model.TaskCategory{}).Find(&category).Error; err != nil {
+func (c *categoryservice) GetCategoryService(limit, offset int) (category *[]model.TaskCategory, err error) {
+	if err := util.Master().Model(model.TaskCategory{}).Limit(limit).Offset(offset).Find(&category).Error; err != nil {
 		log.Error(err)
 		return nil, err
 	}

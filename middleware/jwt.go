@@ -7,6 +7,7 @@ import (
 	"go-daily-work/model/request"
 	"go-daily-work/util"
 	"net/http"
+	"time"
 
 	"go-daily-work/model/response"
 
@@ -55,7 +56,7 @@ func JWTAuth() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		_, rt := GetRedisJWT(claims.Email)
+		rt, _ := GetRedisJWT(claims.Email)
 		if rt != token {
 			response.FailWithMessage("Please login first", c)
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -101,9 +102,22 @@ func (j *JWT) ParseToken(tokenString string) (*request.CustomClaims, error) {
 	}
 }
 
-func GetRedisJWT(email string) (err error, redisJWT string) {
+func SetRedisJWT(token string, email string) (err error) {
+	timer := 1 * time.Hour
+	err = util.RedisCache().Set(email, token, timer).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DelRedisJWT(email string) error {
+	return util.RedisCache().Del(email).Err()
+}
+
+func GetRedisJWT(email string) (redisJWT string, err error) {
 	redisJWT, err = util.RedisCache().Get(email).Result()
-	return err, redisJWT
+	return redisJWT, err
 }
 
 func GetUser(c *gin.Context) *model.User {

@@ -5,6 +5,7 @@ import (
 	"go-daily-work/WorkLog/service"
 	"go-daily-work/model/request"
 	"go-daily-work/model/response"
+	"strconv"
 )
 
 type categorycontroller struct{}
@@ -12,7 +13,11 @@ type categorycontroller struct{}
 var CategoryController = new(categorycontroller)
 
 func (w *categorycontroller) GetCategory(c *gin.Context) {
-	categoryList, err := service.CategoryService.GetCategoryService()
+	length, _ := strconv.Atoi(c.Param("length"))
+	start, _ := strconv.Atoi(c.Param("start"))
+	length = 10
+	start = 0
+	categoryList, err := service.CategoryService.GetCategoryService(length, start)
 	if err != nil {
 		response.FailWithDetailed(err, "Failed to get category records", c)
 		return

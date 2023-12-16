@@ -11,13 +11,13 @@ type Login struct {
 }
 
 type CustomClaims struct {
-	UUID        uuid.UUID
-	ID          uint
-	Username    string
-	Email       string
-	AuthorityId string
-	BufferTime  int64
+	UUID     uuid.UUID
+	ID       uint
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Position string `json:"position,omitempty"`
 	jwt.StandardClaims
+	//BufferTime int64
 }
 
 type WorkLog struct {

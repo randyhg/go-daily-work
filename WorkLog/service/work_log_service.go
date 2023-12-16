@@ -4,6 +4,7 @@ import (
 	"go-daily-work/log"
 	"go-daily-work/model"
 	"go-daily-work/model/request"
+	"go-daily-work/model/response"
 	"go-daily-work/util"
 )
 
@@ -11,12 +12,15 @@ type worklogservice struct{}
 
 var WorkLogService = new(worklogservice)
 
-func (w *worklogservice) GetWorkLogService(userId int64) ([]model.WorkLog, error) {
-	var workLogs []model.WorkLog
-	if err := util.Master().
-		Preload("Project").
-		Preload("TaskCategory").
-		Where("user_id = ?", userId).Find(&workLogs).Error; err != nil {
+func (w *worklogservice) GetWorkLogService(userId int64, limit, offset int) (workLogs []response.WorkLogResp, err error) {
+	if err = util.Master().
+		Table("t_work_log wl").
+		Select("wl.id Id, wl.description Description, p.name ProjectName, tc.name TaskCategory").
+		Joins("JOIN t_user u ON wl.user_id = u.id").
+		Joins("JOIN t_project p ON wl.task_project_id = p.id").
+		Joins("JOIN t_task_category tc ON wl.task_category_id = tc.id").
+		Where("user_id = ?", userId).Order("Id").Limit(limit).Offset(offset).
+		Scan(&workLogs).Error; err != nil {
 		log.Error(err)
 		return nil, err
 	}
@@ -38,15 +42,38 @@ func (w *worklogservice) AddWorkLogService(req request.WorkLog, user *model.User
 	return nil
 }
 
-func (w *worklogservice) EditWorkLogService(req request.UpdateWorkLog, userId int64) error {
-	updateData := map[string]interface{}{
-		"user_id":          userId,
-		"task_project_id":  req.TaskProject,
-		"task_category_id": req.TaskCategory,
-		"description":      req.Description,
+func (w *worklogservice) EditWorkLogServiceV2(req model.WorkLog) error {
+	var existingWorklog model.WorkLog
+	result := util.Master().First(&existingWorklog, req.Id)
+	if result.Error != nil {
+		log.Error(result.Error)
+		return result.Error
 	}
-	if err := util.Master().Model(model.WorkLog{}).Where("id = ?", req.WorkLogId).Updates(updateData).Error; err != nil {
+
+	if err := util.Master().Model(&existingWorklog).Updates(&req).Error; err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
 }
+
+func (w *worklogservice) DeleteWorkLogService(req model.WorkLog) error {
+	if err := util.Master().Delete(&req, req.Id).Error; err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//func (w *worklogservice) EditWorkLogService(req request.UpdateWorkLog) error {
+//	updateData := map[string]interface{}{
+//		"task_project_id":  req.TaskProject,
+//		"task_category_id": req.TaskCategory,
+//		"description":      req.Description,
+//	}
+//	if err := util.Master().Model(model.WorkLog{}).Where("id = ?", req.WorkLogId).Updates(updateData).Error; err != nil {
+//		log.Error(err)
+//		return err
+//	}
+//	return nil
+//}
