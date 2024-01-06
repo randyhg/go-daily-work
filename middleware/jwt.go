@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"go-daily-work/config"
+	milog "go-daily-work/log"
 	"go-daily-work/model"
 	"go-daily-work/model/request"
 	"go-daily-work/util"
@@ -10,8 +11,6 @@ import (
 	"time"
 
 	"go-daily-work/model/response"
-
-	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -75,6 +74,27 @@ func JWTAuth() gin.HandlerFunc {
 	}
 }
 
+func Permission(permission string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := GetUser(c)
+		can, err := util.Permify().UserHasPermission(uint(user.Id), permission)
+		if err != nil {
+			milog.Error(err)
+			response.FailWithMessage("You don't have access to this route", c)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		if can {
+			c.Next()
+			return
+		} else {
+			response.FailWithMessage("You don't have access to this route", c)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+	}
+}
+
 func (j *JWT) ParseToken(tokenString string) (*request.CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &request.CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return j.SigningKey, nil
@@ -121,17 +141,44 @@ func GetRedisJWT(email string) (redisJWT string, err error) {
 }
 
 func GetUser(c *gin.Context) *model.User {
-	token, _ := c.Cookie("Authorization")
-	j := NewJWT()
-	claims, err := j.ParseToken(token)
-	if err != nil {
-		return nil
-	}
+	//userInterface, ok := c.Get("user")
+	//user := userInterface.(model.User)
+	//if !ok {
+	//	return nil
+	//}
+	//return &user
 
-	var user model.User
-	if err := util.Master().Where("email = ?", claims.Email).First(&user).Error; err != nil {
-		log.Fatal(err)
-		return nil
+	if userInterface, ok := c.Get("user"); userInterface != nil {
+		user := userInterface.(model.User)
+		if !ok {
+			return nil
+		}
+		return &user
+	} else {
+		token, err := c.Cookie("Authorization")
+		if err != nil {
+			milog.Error(err)
+			return nil
+		}
+		j := NewJWT()
+		claims, err := j.ParseToken(token)
+		if err != nil {
+			milog.Error(err)
+			return nil
+		}
+
+		var user model.User
+		if err := util.Master().Where("email = ?", claims.Email).First(&user).Error; err != nil {
+			milog.Error(err)
+			return nil
+		}
+		return &user
 	}
-	return &user
+}
+
+func AddRoleToUser(position string, user model.User) error {
+	if err := util.Permify().AddRolesToUser(uint(user.Id), position); err != nil {
+		return err
+	}
+	return nil
 }

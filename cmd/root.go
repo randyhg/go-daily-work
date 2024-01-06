@@ -50,6 +50,7 @@ func start(cmd *cobra.Command, args []string) {
 	config.Init()
 	util.SqlInit()
 	util.RedisInit()
+	util.PermifyInit()
 	model.Migration()
 	app.StartServer()
 }
