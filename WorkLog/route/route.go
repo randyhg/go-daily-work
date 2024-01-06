@@ -22,8 +22,9 @@ func RegisterRoutes(c *gin.Engine) {
 		c.Status(200)
 	})
 	{
-		public.POST("/login", controller.LoginController.Login)
-		public.GET("/logout", controller.LoginController.Logout)
+		public.POST("/login", controller.SignController.SignIn)
+		public.POST("/sign_up", controller.SignController.SignUp)
+		public.GET("/logout", controller.SignController.SignOut)
 		public.GET("/", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
@@ -34,10 +35,11 @@ func RegisterRoutes(c *gin.Engine) {
 	private := c.Group("api")
 	private.Use(middleware.JWTAuth())
 	{
-		private.GET("/validate", middleware.JWTAuth(), controller.LoginController.Validate)
+		private.GET("/validate", middleware.JWTAuth(), controller.SignController.Validate)
 
 		workLog := private.Group("workLog")
 		{
+			workLog.Use(middleware.Permission("manage DWL"))
 			workLog.GET("/list", controller.WorkLogController.GetWorkLog)
 			workLog.POST("/add", controller.WorkLogController.AddWorkLog)
 			workLog.POST("/update", controller.WorkLogController.EditWorkLog)
@@ -47,6 +49,9 @@ func RegisterRoutes(c *gin.Engine) {
 		category := private.Group("category")
 		{
 			category.GET("/list", controller.CategoryController.GetCategory)
+
+			// manager and admin access
+			category.Use(middleware.Permission("manage category"))
 			category.POST("/add", controller.CategoryController.AddCategory)
 			category.POST("/update", controller.CategoryController.EditCategory)
 			category.POST("/delete", controller.CategoryController.DeleteCategory)
@@ -55,6 +60,9 @@ func RegisterRoutes(c *gin.Engine) {
 		project := private.Group("project")
 		{
 			project.GET("/list", controller.ProjectController.GetProject)
+
+			// manager and admin access
+			project.Use(middleware.Permission("manage project"))
 			project.POST("/add", controller.ProjectController.AddProject)
 			project.POST("/update", controller.ProjectController.EditProject)
 			project.POST("/delete", controller.ProjectController.DeleteProject)

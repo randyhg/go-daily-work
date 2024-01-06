@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+const (
+	ManagerRoleId = uint(1)
+	AdminRoleId   = uint(2)
+	StaffRoleId   = uint(3)
+)
+
 type Model struct {
 	Id int64 `gorm:"PRIMARY_KEY;AUTO_INCREMENT" json:"id" form:"id"`
 }
@@ -36,6 +42,7 @@ type User struct {
 	CreatedAt time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	//RoleId    uint           `gorm:"not null;" json:"role_id"`
 }
 
 type TaskCategory struct {

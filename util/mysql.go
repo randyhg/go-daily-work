@@ -30,8 +30,8 @@ func openDB(dsn string, config *gorm.Config, maxIdleConns, maxOpenConns int) (er
 
 	if config.NamingStrategy == nil {
 		config.NamingStrategy = schema.NamingStrategy{
-			TablePrefix:   "t_",
-			SingularTable: true,
+			//TablePrefix:   "t_",
+			SingularTable: false,
 		}
 	}
 
