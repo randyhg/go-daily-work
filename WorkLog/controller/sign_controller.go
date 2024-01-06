@@ -9,21 +9,47 @@ import (
 	"go-daily-work/model/response"
 	"go-daily-work/util"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-type logincontroller struct{}
+type signcontroller struct{}
 
-var LoginController = new(logincontroller)
+var SignController = new(signcontroller)
 
-func (l *logincontroller) Login(c *gin.Context) {
-	var req request.Login
-	_ = c.ShouldBindJSON(&req)
+func (s *signcontroller) SignUp(c *gin.Context) {
+	var req request.SignUp
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage("Parameter input is wrong: "+err.Error(), c)
+		return
+	}
+
+	if req.Password != req.RePassword {
+		response.FailWithMessage("Passwords doesn't match", c)
+		return
+	}
+	req.Password = util.MD5V([]byte(req.Password))
+	req.Email = strings.TrimSpace(req.Email)
+
+	if err := service.SignService.SignUpService(req); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithMessage("Sign up success", c)
+}
+
+func (s *signcontroller) SignIn(c *gin.Context) {
+	var req request.SignIn
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage("Parameter input is wrong: "+err.Error(), c)
+		return
+	}
 	log.Info(req)
 
 	req.Password = util.MD5V([]byte(req.Password))
-	user, err := service.LoginService.Login(req)
+	log.Info(req)
+	user, err := service.SignService.SignInService(req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid email or password",
@@ -45,10 +71,10 @@ func (l *logincontroller) Login(c *gin.Context) {
 		c.SetSameSite(http.SameSiteLaxMode)
 		c.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
 	}
-	response.OkWithDetailed(map[string]string{"token": existToken}, "Login successful", c)
+	response.OkWithDetailed(map[string]string{"token": existToken}, "SignInService successful", c)
 }
 
-func (l *logincontroller) Logout(c *gin.Context) {
+func (s *signcontroller) SignOut(c *gin.Context) {
 	user := middleware.GetUser(c)
 	fmt.Println(user)
 
@@ -59,7 +85,7 @@ func (l *logincontroller) Logout(c *gin.Context) {
 	response.OkWithMessage("Sign out success", c)
 }
 
-func (l *logincontroller) Validate(c *gin.Context) {
+func (s *signcontroller) Validate(c *gin.Context) {
 	user, _ := c.Get("user")
 	c.JSON(http.StatusOK, gin.H{
 		"message": "I'm logged in",
