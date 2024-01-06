@@ -5,7 +5,15 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type Login struct {
+type SignUp struct {
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	RePassword string `json:"re_password"`
+	Position   string `json:"position"`
+}
+
+type SignIn struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

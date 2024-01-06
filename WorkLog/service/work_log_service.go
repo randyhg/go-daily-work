@@ -14,11 +14,11 @@ var WorkLogService = new(worklogservice)
 
 func (w *worklogservice) GetWorkLogService(userId int64, limit, offset int) (workLogs []response.WorkLogResp, err error) {
 	if err = util.Master().
-		Table("t_work_log wl").
+		Table("work_logs wl").
 		Select("wl.id Id, wl.description Description, p.name ProjectName, tc.name TaskCategory").
-		Joins("JOIN t_user u ON wl.user_id = u.id").
-		Joins("JOIN t_project p ON wl.task_project_id = p.id").
-		Joins("JOIN t_task_category tc ON wl.task_category_id = tc.id").
+		Joins("JOIN users u ON wl.user_id = u.id").
+		Joins("JOIN projects p ON wl.task_project_id = p.id").
+		Joins("JOIN task_categories tc ON wl.task_category_id = tc.id").
 		Where("user_id = ?", userId).Order("Id").Limit(limit).Offset(offset).
 		Scan(&workLogs).Error; err != nil {
 		log.Error(err)
